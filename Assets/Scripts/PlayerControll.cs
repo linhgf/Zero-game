@@ -7,15 +7,17 @@ public class PlayerControll : MonoBehaviour
 {
     public Rigidbody2D rb;
     public Collider2D coll;
+    public Collider2D topColl;
     public Animator anim;
 
     
     public float speed, jumpForce;
     public Transform groundCheck;
     public LayerMask ground;
+    public Transform topCheck;
 
-    public bool isGround, isJump,isHurted;
-    public bool jumpPressed;
+    public bool isGround, isJump,isHurted,isCrouch;
+    public bool jumpPressed,crouchPressed;
 
     public int jumpCount;
     public int cherry = 0;
@@ -35,6 +37,16 @@ public class PlayerControll : MonoBehaviour
             jumpAudio.Play();
             jumpPressed = true;
         }
+
+        if (Input.GetButtonDown("Crouch"))
+        {
+            crouchPressed = true;
+        }
+
+        if (Input.GetButtonUp("Crouch"))
+        {
+            crouchPressed = false;
+        }
     }
 
     private void FixedUpdate()
@@ -45,6 +57,7 @@ public class PlayerControll : MonoBehaviour
         {
             Move();
             Jump();
+            Crouch();
         }
         switchAnimation();
     }
@@ -82,6 +95,23 @@ public class PlayerControll : MonoBehaviour
         }
     }
 
+    void Crouch()
+    {
+        if (crouchPressed)
+        {
+            topColl.enabled = false;
+            isCrouch = true;
+        }
+        else if (crouchPressed == false)
+        {
+            if (!Physics2D.OverlapCircle(topCheck.position, 0.2f, ground))
+            {
+                topColl.enabled = true;
+                isCrouch = false;
+            }
+        }
+    }
+
     //select animation
     void switchAnimation()
     {
@@ -95,13 +125,22 @@ public class PlayerControll : MonoBehaviour
         {
             anim.SetBool("toFall", true);
             anim.SetBool("toJump", false);
-            anim.SetBool("toIdle", false);
+           //anim.SetBool("toIdle", false);
         }
         else if (isGround)
         {
-            anim.SetBool("toIdle", true);
+            //anim.SetBool("toIdle", true);
             anim.SetBool("toFall", false);
-            anim.SetBool("toHurted", false);
+            anim.SetBool("toJump", false);
+            //anim.SetBool("toHurted", false);
+        }
+        if (isCrouch)
+        {
+            anim.SetBool("toCrouch", true);
+        }
+        else if (!isCrouch)
+        {
+            anim.SetBool("toCrouch", false);
         }
         if (isHurted)
         {

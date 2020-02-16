@@ -20,7 +20,7 @@ public class PlayerControll : MonoBehaviour
     public int jumpCount;
     public int cherry = 0;
     public Text Score;
-
+    public AudioSource jumpAudio,hurtAudio,cherryAudio;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,6 +32,7 @@ public class PlayerControll : MonoBehaviour
     {  
         if (Input.GetButtonDown("Jump") && jumpCount > 0)
         {
+            jumpAudio.Play();
             jumpPressed = true;
         }
     }
@@ -118,6 +119,7 @@ public class PlayerControll : MonoBehaviour
     {
         if (collision.tag == "Collection")
         {
+            cherryAudio.Play();
             Destroy(collision.gameObject);
             cherry += 1;
             Score.text = cherry.ToString();
@@ -126,6 +128,7 @@ public class PlayerControll : MonoBehaviour
         {
             Enermy enermy = collision.gameObject.GetComponent<Enermy>();
             enermy.Showdeath();
+            jumpCount = 2;
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
     }
@@ -137,6 +140,7 @@ public class PlayerControll : MonoBehaviour
         {
             if (transform.position.x < collision.gameObject.transform.position.x)
             {
+                hurtAudio.Play();
                 isHurted = true;
                 rb.velocity = new Vector2(-speed, jumpForce);
             }

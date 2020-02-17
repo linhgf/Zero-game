@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
 
 public class PlayerControll : MonoBehaviour
 {
@@ -9,7 +11,7 @@ public class PlayerControll : MonoBehaviour
     public Collider2D coll;
     public Collider2D topColl;
     public Animator anim;
-
+    public GameObject gameover;
     
     public float speed, jumpForce;
     public Transform groundCheck;
@@ -18,11 +20,14 @@ public class PlayerControll : MonoBehaviour
 
     public bool isGround, isJump,isHurted,isCrouch;
     public bool jumpPressed,crouchPressed;
-
+    //跳跃次数
     public int jumpCount;
+    //分数
     public int cherry = 0;
     public Text Score;
+    //音源
     public AudioSource jumpAudio,hurtAudio,cherryAudio;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -189,6 +194,17 @@ public class PlayerControll : MonoBehaviour
                 rb.velocity = new Vector2(speed, jumpForce);
             }
         }
-       
+
+        if (collision.gameObject.tag == "DeadLine")
+        {
+            gameover.SetActive(true);
+            Invoke("Reastart", 2f);//延时调用
+        }
+    }
+    //reastart the game
+    private void Reastart()
+    {
+        //调用静态方法
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

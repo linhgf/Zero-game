@@ -213,6 +213,7 @@ MonoBehaviour:
   coll: {fileID: 8310748753004371479}
   topColl: {fileID: 8310748753004371465}
   anim: {fileID: 8310748753004371476}
+  gameover: {fileID: 0}
   speed: 5
   jumpForce: 9
   groundCheck: {fileID: 8310748752780121964}

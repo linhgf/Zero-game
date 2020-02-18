@@ -18,7 +18,16 @@ public class PlayerControll : MonoBehaviour
     public LayerMask ground;
     public Transform topCheck;
 
-    public bool isGround, isJump,isHurted,isCrouch;
+    [Header("Dash参数")]
+    public float dashTime;//dash时长
+    public float dashSpeed;//dash速度
+    public float dashCoolDown;//dash CD时长
+    private float lastDash = -10f;//上一次dash时间点
+    private float dashTimeLeft;//dash剩余时间
+    private float dashFace;//dash方向
+
+    private float horizontalMove;
+    public bool isGround, isJumping,isHurted,isCrouch,isDashing;
     public bool jumpPressed,crouchPressed;
     //跳跃次数
     public int jumpCount;
@@ -42,7 +51,7 @@ public class PlayerControll : MonoBehaviour
             jumpAudio.Play();
             jumpPressed = true;
         }
-
+        
         if (Input.GetButtonDown("Crouch"))
         {
             crouchPressed = true;
@@ -52,6 +61,15 @@ public class PlayerControll : MonoBehaviour
         {
             crouchPressed = false;
         }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            if (Time.time >= (lastDash + dashCoolDown))
+            {
+                //冷却结束 可以执行dash
+                ReadyToDash();
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -60,6 +78,9 @@ public class PlayerControll : MonoBehaviour
 
         if (!isHurted)
         {
+            Dash();
+            if (isDashing)
+                return;
             Move();
             Jump();
             Crouch();
@@ -69,12 +90,13 @@ public class PlayerControll : MonoBehaviour
     //move
     void Move()
     {
-        float horizontalMove = Input.GetAxisRaw("Horizontal");
+        horizontalMove = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
 
         if (horizontalMove != 0)
         {
             transform.localScale = new Vector3(horizontalMove, 1, 1);
+            dashFace = horizontalMove;
         }
     }
     //jump
@@ -83,16 +105,16 @@ public class PlayerControll : MonoBehaviour
         if (isGround && rb.velocity.y == 0)
         {
             jumpCount = 2;//可跳跃数量
-            isJump = false;
+            isJumping = false;
         }
         if (jumpPressed && isGround)
         {
-            isJump = true;
+            isJumping = true;
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             jumpCount--;
             jumpPressed = false;
         }
-        else if (jumpPressed && jumpCount > 0 && isJump)
+        else if (jumpPressed && jumpCount > 0 && isJumping)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             jumpCount--;
@@ -207,4 +229,39 @@ public class PlayerControll : MonoBehaviour
         //调用静态方法
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
+    //dash预备
+    void ReadyToDash()
+    {
+        isDashing = true;
+        dashTimeLeft = dashTime;
+        lastDash = Time.time;
+    }
+
+    void Dash()
+    {
+        if (isDashing)
+        {
+            if (dashTimeLeft > 0)
+            {
+                if (!isGround && rb.velocity.y > 0)
+                {
+                    rb.velocity = new Vector2(dashSpeed * dashFace, jumpForce);
+                }
+                rb.velocity = new Vector2(dashSpeed * dashFace, rb.velocity.y);
+                dashTimeLeft -= Time.deltaTime;
+
+                ShadowPool.instance.GetFromPool();
+            }
+            if (dashTimeLeft <= 0)
+            {
+                isDashing = false;
+                if (!isGround)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                }
+            }
+        }
+    }
+
 }
